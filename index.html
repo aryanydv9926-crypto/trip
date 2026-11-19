@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StoryVerse – Your Personal Story Writing Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Playfair Display', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            ink: {
+              50: '#f8f7f4',
+              100: '#f0eee8',
+              200: '#e2ddd3',
+              300: '#cfc6b6',
+              400: '#b5a790',
+              500: '#9c8d74',
+              600: '#857662',
+              700: '#6d6152',
+              800: '#5a5145',
+              900: '#4b443b',
+              950: '#28241f',
+            },
+            accent: {
+              DEFAULT: '#c45c26',
+              light: '#e07a45',
+              dark: '#9a4519',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body class="bg-ink-50 text-ink-900 antialiased">
+  <!-- App Shell -->
+  <div id="app" class="min-h-screen flex flex-col">
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-ink-200">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center gap-3 cursor-pointer" onclick="navigate('dashboard')">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center shadow-sm">
+              <i class="fa-solid fa-pen-nib text-white text-sm"></i>
+            </div>
+            <div>
+              <h1 class="font-serif text-xl font-semibold tracking-tight text-ink-900">StoryVerse</h1>
+              <p class="text-[10px] uppercase tracking-widest text-ink-500 -mt-0.5">Writing Studio</p>
+            </div>
+          </div>
+
+          <!-- Global Search -->
+          <div class="hidden md:flex flex-1 max-w-xl mx-8">
+            <div class="relative w-full">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm"></i>
+              <input
+                id="globalSearch"
+                type="text"
+                placeholder="Search stories, characters, ideas, scenes..."
+                class="w-full pl-10 pr-4 py-2 rounded-xl bg-ink-100 border border-transparent focus:border-accent/40 focus:bg-white focus:ring-2 focus:ring-accent/20 outline-none text-sm transition"
+                oninput="handleGlobalSearch(this.value)"
+              />
+            </div>
+          </div>
+
+          <!-- Right Actions -->
+          <div class="flex items-center gap-2">
+            <button onclick="toggleTheme()" class="p-2.5 rounded-xl hover:bg-ink-100 transition text-ink-600" title="Toggle theme">
+              <i class="fa-solid fa-moon dark:hidden"></i>
+              <i class="fa-solid fa-sun hidden dark:inline"></i>
+            </button>
+            <button onclick="openNewProjectModal()" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-accent hover:bg-accent-light text-white text-sm font-medium shadow-sm transition">
+              <i class="fa-solid fa-plus text-xs"></i>
+              New Project
+            </button>
+            <button onclick="navigate('ideas')" class="p-2.5 rounded-xl hover:bg-ink-100 transition text-ink-600" title="Ideas Vault">
+              <i class="fa-solid fa-lightbulb"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="w-64 bg-white border-r border-ink-200 flex-shrink-0 hidden lg:flex flex-col">
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+          <p class="px-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Workspace</p>
+          <a href="#" onclick="navigate('dashboard')" class="nav-item active" data-view="dashboard">
+            <i class="fa-solid fa-house w-5"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="#" onclick="navigate('projects')" class="nav-item" data-view="projects">
+            <i class="fa-solid fa-folder-open w-5"></i>
+            <span>All Projects</span>
+          </a>
+          <a href="#" onclick="navigate('editor')" class="nav-item" data-view="editor">
+            <i class="fa-solid fa-pen-to-square w-5"></i>
+            <span>Writing Desk</span>
+          </a>
+          <a href="#" onclick="navigate('episodes')" class="nav-item" data-view="episodes">
+            <i class="fa-solid fa-clapperboard w-5"></i>
+            <span>Episodes</span>
+          </a>
+          <a href="#" onclick="navigate('characters')" class="nav-item" data-view="characters">
+            <i class="fa-solid fa-users w-5"></i>
+            <span>Character Studio</span>
+          </a>
+          <a href="#" onclick="navigate('dialogues')" class="nav-item" data-view="dialogues">
+            <i class="fa-solid fa-comments w-5"></i>
+            <span>Dialogue Studio</span>
+          </a>
+          <a href="#" onclick="navigate('scenes')" class="nav-item" data-view="scenes">
+            <i class="fa-solid fa-film w-5"></i>
+            <span>Scene Manager</span>
+          </a>
+          <a href="#" onclick="navigate('ideas')" class="nav-item" data-view="ideas">
+            <i class="fa-solid fa-lightbulb w-5"></i>
+            <span>Ideas Vault</span>
+          </a>
+          <a href="#" onclick="navigate('notes')" class="nav-item" data-view="notes">
+            <i class="fa-solid fa-book-open w-5"></i>
+            <span>Notes & Research</span>
+          </a>
+
+          <div class="pt-6">
+            <p class="px-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Quick Stats</p>
+            <div class="px-3 space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-ink-500">Total Words</span>
+                <span id="statTotalWords" class="font-semibold text-ink-800">0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-ink-500">Projects</span>
+                <span id="statProjects" class="font-semibold text-ink-800">0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-ink-500">Characters</span>
+                <span id="statCharacters" class="font-semibold text-ink-800">0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-ink-500">Ideas</span>
+                <span id="statIdeas" class="font-semibold text-ink-800">0</span>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <div class="p-4 border-t border-ink-100">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-ink-300 to-ink-500 flex items-center justify-center text-white text-sm font-medium">
+              W
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-ink-800 truncate">Writer</p>
+              <p class="text-xs text-ink-500">Personal Studio</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Content Views -->
+      <main class="flex-1 overflow-y-auto bg-ink-50">
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="view active">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Welcome -->
+            <div class="mb-10">
+              <h2 class="font-serif text-3xl md:text-4xl font-semibold text-ink-900 mb-2">Welcome back, Writer</h2>
+              <p class="text-ink-500 text-lg">Continue crafting your next masterpiece.</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-ink-500 text-sm">Total Words</span>
+                  <i class="fa-solid fa-font text-accent/70"></i>
+                </div>
+                <p id="dashTotalWords" class="text-2xl font-semibold text-ink-900">0</p>
+                <p class="text-xs text-ink-400 mt-1">Across all projects</p>
+              </div>
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-ink-500 text-sm">Active Projects</span>
+                  <i class="fa-solid fa-folder text-accent/70"></i>
+                </div>
+                <p id="dashProjects" class="text-2xl font-semibold text-ink-900">0</p>
+                <p class="text-xs text-ink-400 mt-1">Movies & Series</p>
+              </div>
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-ink-500 text-sm">Characters</span>
+                  <i class="fa-solid fa-user-pen text-accent/70"></i>
+                </div>
+                <p id="dashCharacters" class="text-2xl font-semibold text-ink-900">0</p>
+                <p class="text-xs text-ink-400 mt-1">In development</p>
+              </div>
+              <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-ink-500 text-sm">Ideas Saved</span>
+                  <i class="fa-solid fa-lightbulb text-accent/70"></i>
+                </div>
+                <p id="dashIdeas" class="text-2xl font-semibold text-ink-900">0</p>
+                <p class="text-xs text-ink-400 mt-1">Ready to grow</p>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex flex-wrap gap-3 mb-10">
+              <button onclick="openNewProjectModal()" class="btn-primary">
+                <i class="fa-solid fa-plus"></i> New Project
+              </button>
+              <button onclick="navigate('editor')" class="btn-secondary">
+                <i class="fa-solid fa-pen"></i> Open Writing Desk
+              </button>
+              <button onclick="navigate('ideas')" class="btn-secondary">
+                <i class="fa-solid fa-lightbulb"></i> Capture Idea
+              </button>
+              <button onclick="navigate('characters')" class="btn-secondary">
+                <i class="fa-solid fa-user-plus"></i> New Character
+              </button>
+            </div>
+
+            <!-- Recent Projects -->
+            <section class="mb-12">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-serif text-xl font-semibold text-ink-900">Recent Projects</h3>
+                <button onclick="navigate('projects')" class="text-sm text-accent hover:text-accent-dark font-medium">View all →</button>
+              </div>
+              <div id="recentProjects" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Filled by JS -->
+              </div>
+            </section>
+
+            <!-- Recently Edited Documents -->
+            <section class="mb-12">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-serif text-xl font-semibold text-ink-900">Recently Edited</h3>
+              </div>
+              <div id="recentDocs" class="bg-white rounded-2xl border border-ink-200 divide-y divide-ink-100 overflow-hidden">
+                <!-- Filled by JS -->
+              </div>
+            </section>
+
+            <!-- Ideas Snapshot -->
+            <section>
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-serif text-xl font-semibold text-ink-900">Ideas Vault Snapshot</h3>
+                <button onclick="navigate('ideas')" class="text-sm text-accent hover:text-accent-dark font-medium">Open Vault →</button>
+              </div>
+              <div id="ideasSnapshot" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Filled by JS -->
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- PROJECTS VIEW -->
+        <div id="view-projects" class="view hidden">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 class="font-serif text-3xl font-semibold text-ink-900">All Projects</h2>
+                <p class="text-ink-500 mt-1">Movies, web series, and standalone stories</p>
+              </div>
+              <div class="flex gap-3">
+                <select id="projectFilter" onchange="renderProjects()" class="px-3 py-2 rounded-xl border border-ink-200 bg-white text-sm outline-none focus:ring-2 focus:ring-accent/30">
+                  <option value="all">All Types</option>
+                  <option value="movie">Movies</option>
+                  <option value="series">Web Series</option>
+                  <option value="story">Stories</option>
+                </select>
+                <button onclick="openNewProjectModal()" class="btn-primary">
+                  <i class="fa-solid fa-plus"></i> New Project
+                </button>
+              </div>
+            </div>
+            <div id="allProjectsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- WRITING EDITOR VIEW -->
+        <div id="view-editor" class="view hidden h-full flex flex-col">
+          <div class="flex-1 flex flex-col max-w-5xl mx-auto w-full px-4 sm:px-6 py-6">
+            <!-- Editor Toolbar -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4 bg-white rounded-2xl border border-ink-200 p-3 shadow-sm">
+              <div class="flex items-center gap-2">
+                <select id="docSelector" onchange="loadDocument(this.value)" class="px-3 py-1.5 rounded-lg border border-ink-200 text-sm bg-ink-50 outline-none">
+                  <option value="">Select document...</option>
+                </select>
+                <button onclick="createNewDocument()" class="p-2 rounded-lg hover:bg-ink-100 text-ink-600" title="New Document">
+                  <i class="fa-solid fa-file-circle-plus"></i>
+                </button>
+              </div>
+              <div class="flex items-center gap-1 flex-wrap">
+                <button onclick="execCmd('bold')" class="toolbar-btn" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                <button onclick="execCmd('italic')" class="toolbar-btn" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                <button onclick="execCmd('underline')" class="toolbar-btn" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                <span class="w-px h-5 bg-ink-200 mx-1"></span>
+                <button onclick="execCmd('justifyLeft')" class="toolbar-btn" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                <button onclick="execCmd('justifyCenter')" class="toolbar-btn" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                <button onclick="execCmd('justifyRight')" class="toolbar-btn" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                <span class="w-px h-5 bg-ink-200 mx-1"></span>
+                <select onchange="execCmd('fontSize', this.value)" class="text-xs px-2 py-1 rounded border border-ink-200 bg-white">
+                  <option value="3">Normal</option>
+                  <option value="4">Large</option>
+                  <option value="5">Larger</option>
+                  <option value="2">Small</option>
+                </select>
+                <span class="w-px h-5 bg-ink-200 mx-1"></span>
+                <button onclick="execCmd('undo')" class="toolbar-btn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
+                <button onclick="execCmd('redo')" class="toolbar-btn" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="wordCount" class="text-xs text-ink-500 font-mono">0 words</span>
+                <button onclick="saveCurrentDocument()" class="btn-primary text-xs py-1.5 px-3">
+                  <i class="fa-solid fa-floppy-disk"></i> Save
+                </button>
+                <button onclick="toggleFullscreenEditor()" class="toolbar-btn" title="Fullscreen">
+                  <i class="fa-solid fa-expand"></i>
+                </button>
+                <div class="relative">
+                  <button onclick="toggleExportMenu()" class="toolbar-btn" title="Export">
+                    <i class="fa-solid fa-download"></i>
+                  </button>
+                  <div id="exportMenu" class="hidden absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-ink-200 py-1 z-20 min-w-[140px]">
+                    <button onclick="exportDoc('txt')" class="w-full text-left px-4 py-2 text-sm hover:bg-ink-50">Export TXT</button>
+                    <button onclick="exportDoc('pdf')" class="w-full text-left px-4 py-2 text-sm hover:bg-ink-50">Export PDF</button>
+                    <button onclick="exportDoc('docx')" class="w-full text-left px-4 py-2 text-sm hover:bg-ink-50">Export DOCX</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Document Title -->
+            <input
+              id="docTitle"
+              type="text"
+              placeholder="Document title..."
+              class="w-full text-2xl font-serif font-semibold bg-transparent border-none outline-none mb-4 text-ink-900 placeholder:text-ink-300"
+              oninput="markDirty()"
+            />
+
+            <!-- Writing Area -->
+            <div
+              id="editorArea"
+              contenteditable="true"
+              class="flex-1 min-h-[60vh] bg-white rounded-2xl border border-ink-200 p-8 md:p-12 shadow-sm outline-none prose prose-ink max-w-none focus:ring-2 focus:ring-accent/20 transition leading-relaxed text-[17px]"
+              oninput="updateWordCount(); markDirty(); autoSave()"
+              data-placeholder="Start writing your story..."
+            ></div>
+
+            <div class="mt-3 flex items-center justify-between text-xs text-ink-400">
+              <span id="saveStatus">All changes saved</span>
+              <span id="charCount">0 characters</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- EPISODES VIEW -->
+        <div id="view-episodes" class="view hidden">
+          <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 class="font-serif text-3xl font-semibold text-ink-900">Episodes</h2>
+                <p class="text-ink-500 mt-1">Manage episodic content for series</p>
+              </div>
+              <div class="flex gap-3">
+                <select id="episodeProjectFilter" onchange="renderEpisodes()" class="px-3 py-2 rounded-xl border border-ink-200 bg-white text-sm">
+                  <option value="">All Projects</option>
+                </select>
+                <button onclick="openEpisodeModal()" class="btn-primary">
+                  <i class="fa-solid fa-plus"></i> New Episode
+                </button>
+              </div>
+            </div>
+            <div id="episodesList" class="space-y-3">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- CHARACTERS VIEW -->
+        <div id="view-characters" class="view hidden">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 class="font-serif text-3xl font-semibold text-ink-900">Character Studio</h2>
+                <p class="text-ink-500 mt-1">Develop deep, memorable characters</p>
+              </div>
+              <button onclick="openCharacterModal()" class="btn-primary">
+                <i class="fa-solid fa-user-plus"></i> New Character
+              </button>
+            </div>
+            <div id="charactersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- DIALOGUES VIEW -->
+        <div id="view-dialogues" class="view hidden">
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 class="font-serif text-3xl font-semibold text-ink-900">Dialogue Studio</h2>
+                <p class="text-ink-500 mt-1">Craft conversations that feel real</p>
+              </div>
+              <button onclick="openDialogueModal()" class="btn-primary">
+                <i class="fa-solid fa-plus"></i> New Dialogue
+              </button>
+            </div>
+            <div id="dialoguesList" class="space-y-4">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SCENES VIEW -->
+        <div id="view-scenes" class="view hidden">
+          <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 class="font-serif text-3xl font-semibold text-ink-900">Scene Manager</h2>
+                <p class="text-ink-500 mt-1">Structure your story scene by scene</p>
+              </div>
+              <button onclick="openSceneModal()" class="btn-primary">
+                <i class="fa-solid fa-plus"></i> New Scene
+              </button>
+            </div>
+            <div id="scenesList" class="space-y-3">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- IDEAS VIEW -->
+        <div id="view-ideas" class="view hidden">
+          <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 class="font-serif text-3xl font-semibold text-ink-900">Ideas Vault</h2>
+                <p class="text-ink-500 mt-1">Capture sparks before they fade</p>
+              </div>
+              <button onclick="openIdeaModal()" class="btn-primary">
+                <i class="fa-solid fa-lightbulb"></i> Capture Idea
+              </button>
+            </div>
+            <div class="flex gap-3 mb-6 flex-wrap">
+              <button onclick="filterIdeas('all')" class="filter-chip active" data-filter="all">All</button>
+              <button onclick="filterIdeas('favourite')" class="filter-chip" data-filter="favourite">Favourites</button>
+              <button onclick="filterIdeas('plot')" class="filter-chip" data-filter="plot">Plot</button>
+              <button onclick="filterIdeas('character')" class="filter-chip" data-filter="character">Character</button>
+              <button onclick="filterIdeas('dialogue')" class="filter-chip" data-filter="dialogue">Dialogue</button>
+              <button onclick="filterIdeas('scene')" class="filter-chip" data-filter="scene">Scene</button>
+            </div>
+            <div id="ideasGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTES VIEW -->
+        <div id="view-notes" class="view hidden">
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 class="font-serif text-3xl font-semibold text-ink-900">Notes & Research</h2>
+                <p class="text-ink-500 mt-1">World-building, references, and personal notes</p>
+              </div>
+              <button onclick="openNoteModal()" class="btn-primary">
+                <i class="fa-solid fa-plus"></i> New Note
+              </button>
+            </div>
+            <div id="notesList" class="space-y-3">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- New Project Modal -->
+  <div id="projectModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('projectModal')"></div>
+    <div class="modal-content max-w-lg">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-semibold">Create New Project</h3>
+        <button onclick="closeModal('projectModal')" class="p-2 hover:bg-ink-100 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="projectForm" onsubmit="saveProject(event)" class="space-y-4">
+        <div>
+          <label class="label">Title</label>
+          <input type="text" id="projectTitle" required class="input" placeholder="e.g. Echoes of the Forgotten City" />
+        </div>
+        <div>
+          <label class="label">Type</label>
+          <select id="projectType" class="input">
+            <option value="movie">Movie</option>
+            <option value="series">Web Series</option>
+            <option value="story">Standalone Story</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Genre</label>
+          <input type="text" id="projectGenre" class="input" placeholder="Drama, Sci-Fi, Thriller..." />
+        </div>
+        <div>
+          <label class="label">Logline / Short Description</label>
+          <textarea id="projectLogline" rows="3" class="input" placeholder="A one-sentence pitch..."></textarea>
+        </div>
+        <div>
+          <label class="label">Status</label>
+          <select id="projectStatus" class="input">
+            <option value="idea">Idea</option>
+            <option value="draft">Draft</option>
+            <option value="writing">Writing</option>
+            <option value="editing">Editing</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('projectModal')" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Character Modal -->
+  <div id="characterModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('characterModal')"></div>
+    <div class="modal-content max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-semibold" id="charModalTitle">New Character</h3>
+        <button onclick="closeModal('characterModal')" class="p-2 hover:bg-ink-100 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="characterForm" onsubmit="saveCharacter(event)" class="space-y-4">
+        <input type="hidden" id="charId" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="label">Name</label>
+            <input type="text" id="charName" required class="input" placeholder="Character name" />
+          </div>
+          <div>
+            <label class="label">Age</label>
+            <input type="text" id="charAge" class="input" placeholder="e.g. 34" />
+          </div>
+        </div>
+        <div>
+          <label class="label">Role / Archetype</label>
+          <input type="text" id="charRole" class="input" placeholder="Protagonist, Mentor, Antagonist..." />
+        </div>
+        <div>
+          <label class="label">Personality</label>
+          <textarea id="charPersonality" rows="2" class="input" placeholder="Traits, mannerisms, voice..."></textarea>
+        </div>
+        <div>
+          <label class="label">Background</label>
+          <textarea id="charBackground" rows="3" class="input" placeholder="Origin story, key life events..."></textarea>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="label">Strengths</label>
+            <textarea id="charStrengths" rows="2" class="input"></textarea>
+          </div>
+          <div>
+            <label class="label">Weaknesses</label>
+            <textarea id="charWeaknesses" rows="2" class="input"></textarea>
+          </div>
+        </div>
+        <div>
+          <label class="label">Goals & Motivations</label>
+          <textarea id="charGoals" rows="2" class="input"></textarea>
+        </div>
+        <div>
+          <label class="label">Fears & Secrets</label>
+          <textarea id="charFears" rows="2" class="input"></textarea>
+        </div>
+        <div>
+          <label class="label">Character Arc (Beginning → Middle → End)</label>
+          <textarea id="charArc" rows="3" class="input" placeholder="How they change throughout the story..."></textarea>
+        </div>
+        <div>
+          <label class="label">Appearance</label>
+          <textarea id="charAppearance" rows="2" class="input"></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('characterModal')" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Character</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Idea Modal -->
+  <div id="ideaModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('ideaModal')"></div>
+    <div class="modal-content max-w-lg">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-semibold">Capture Idea</h3>
+        <button onclick="closeModal('ideaModal')" class="p-2 hover:bg-ink-100 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="ideaForm" onsubmit="saveIdea(event)" class="space-y-4">
+        <div>
+          <label class="label">Title</label>
+          <input type="text" id="ideaTitle" required class="input" placeholder="Give it a short name" />
+        </div>
+        <div>
+          <label class="label">Type</label>
+          <select id="ideaType" class="input">
+            <option value="plot">Plot / Story</option>
+            <option value="character">Character</option>
+            <option value="dialogue">Dialogue</option>
+            <option value="scene">Scene</option>
+            <option value="twist">Plot Twist</option>
+            <option value="ending">Ending</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Description</label>
+          <textarea id="ideaDesc" rows="4" class="input" placeholder="Write the idea while it's fresh..."></textarea>
+        </div>
+        <div>
+          <label class="label">Tags (comma separated)</label>
+          <input type="text" id="ideaTags" class="input" placeholder="sci-fi, betrayal, rain..." />
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="ideaFavourite" class="rounded border-ink-300 text-accent focus:ring-accent" />
+          <label for="ideaFavourite" class="text-sm">Mark as Favourite</label>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('ideaModal')" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Idea</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Episode Modal -->
+  <div id="episodeModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('episodeModal')"></div>
+    <div class="modal-content max-w-lg">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-semibold">New Episode</h3>
+        <button onclick="closeModal('episodeModal')" class="p-2 hover:bg-ink-100 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="episodeForm" onsubmit="saveEpisode(event)" class="space-y-4">
+        <div>
+          <label class="label">Project</label>
+          <select id="episodeProject" required class="input"></select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="label">Episode #</label>
+            <input type="number" id="episodeNumber" min="1" value="1" class="input" />
+          </div>
+          <div>
+            <label class="label">Status</label>
+            <select id="episodeStatus" class="input">
+              <option value="idea">Idea</option>
+              <option value="draft">Draft</option>
+              <option value="editing">Editing</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="label">Title</label>
+          <input type="text" id="episodeTitle" required class="input" placeholder="Episode title" />
+        </div>
+        <div>
+          <label class="label">Description / Synopsis</label>
+          <textarea id="episodeDesc" rows="3" class="input"></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('episodeModal')" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Create Episode</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scene Modal -->
+  <div id="sceneModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('sceneModal')"></div>
+    <div class="modal-content max-w-lg">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-semibold">New Scene</h3>
+        <button onclick="closeModal('sceneModal')" class="p-2 hover:bg-ink-100 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="sceneForm" onsubmit="saveScene(event)" class="space-y-4">
+        <div>
+          <label class="label">Title</label>
+          <input type="text" id="sceneTitle" required class="input" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="label">Location</label>
+            <input type="text" id="sceneLocation" class="input" placeholder="Kitchen, Rooftop..." />
+          </div>
+          <div>
+            <label class="label">INT / EXT</label>
+            <select id="sceneIntExt" class="input">
+              <option value="INT">INT</option>
+              <option value="EXT">EXT</option>
+              <option value="INT/EXT">INT/EXT</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="label">Time of Day</label>
+            <select id="sceneTime" class="input">
+              <option value="DAY">DAY</option>
+              <option value="NIGHT">NIGHT</option>
+              <option value="DAWN">DAWN</option>
+              <option value="DUSK">DUSK</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Emotional Tone</label>
+            <input type="text" id="sceneTone" class="input" placeholder="Tense, Romantic..." />
+          </div>
+        </div>
+        <div>
+          <label class="label">Description / Action</label>
+          <textarea id="sceneDesc" rows="3" class="input"></textarea>
+        </div>
+        <div>
+          <label class="label">Purpose in Story</label>
+          <input type="text" id="scenePurpose" class="input" placeholder="Reveal secret, raise stakes..." />
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('sceneModal')" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Create Scene</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dialogue Modal -->
+  <div id="dialogueModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('dialogueModal')"></div>
+    <div class="modal-content max-w-lg">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-semibold">New Dialogue</h3>
+        <button onclick="closeModal('dialogueModal')" class="p-2 hover:bg-ink-100 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="dialogueForm" onsubmit="saveDialogue(event)" class="space-y-4">
+        <div>
+          <label class="label">Character</label>
+          <select id="dialogueCharacter" class="input"></select>
+        </div>
+        <div>
+          <label class="label">Emotional Tone</label>
+          <select id="dialogueTone" class="input">
+            <option>Neutral</option>
+            <option>Angry</option>
+            <option>Sad</option>
+            <option>Romantic</option>
+            <option>Funny</option>
+            <option>Serious</option>
+            <option>Emotional</option>
+            <option>Sarcastic</option>
+            <option>Whispered</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Scene Context (optional)</label>
+          <input type="text" id="dialogueScene" class="input" placeholder="Kitchen argument, rooftop confession..." />
+        </div>
+        <div>
+          <label class="label">Dialogue</label>
+          <textarea id="dialogueText" rows="4" required class="input font-mono" placeholder="What they say..."></textarea>
+        </div>
+        <div>
+          <label class="label">Notes</label>
+          <textarea id="dialogueNotes" rows="2" class="input"></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('dialogueModal')" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Dialogue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Note Modal -->
+  <div id="noteModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('noteModal')"></div>
+    <div class="modal-content max-w-lg">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-semibold">New Note</h3>
+        <button onclick="closeModal('noteModal')" class="p-2 hover:bg-ink-100 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="noteForm" onsubmit="saveNote(event)" class="space-y-4">
+        <div>
+          <label class="label">Title</label>
+          <input type="text" id="noteTitle" required class="input" />
+        </div>
+        <div>
+          <label class="label">Category</label>
+          <select id="noteCategory" class="input">
+            <option value="research">Research</option>
+            <option value="worldbuilding">World-building</option>
+            <option value="location">Location</option>
+            <option value="reference">Reference</option>
+            <option value="personal">Personal Note</option>
+            <option value="unused">Unused / Alternative</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Content</label>
+          <textarea id="noteContent" rows="6" class="input"></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('noteModal')" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Save Note</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Character Detail Drawer -->
+  <div id="charDetailDrawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 overflow-y-auto">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-semibold" id="drawerCharName">Character</h3>
+        <button onclick="closeCharDrawer()" class="p-2 hover:bg-ink-100 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="drawerCharContent" class="space-y-5 text-sm"></div>
+      <div class="mt-8 flex gap-3">
+        <button onclick="editCharacterFromDrawer()" class="btn-secondary flex-1">Edit</button>
+        <button onclick="deleteCharacterFromDrawer()" class="btn-danger flex-1">Delete</button>
+      </div>
+    </div>
+  </div>
+  <div id="drawerOverlay" class="fixed inset-0 bg-black/30 z-40 hidden" onclick="closeCharDrawer()"></div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-ink-900 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium transform translate-y-20 opacity-0 transition-all duration-300 z-50"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
